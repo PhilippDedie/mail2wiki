@@ -22,6 +22,7 @@ In development
 
 ## Usage
 1. Edit the configuration in the file mail2wiki.sh
+1. Edit the ikiwiki configuration in the file iki.setup
 2. Run mail2wiki.sh
 
 ## System Requirements
