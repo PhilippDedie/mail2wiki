@@ -4,20 +4,20 @@
 # $1 - Dateiname der E-Mail
 # $2 - Zielverzeichnis
 # $3 - Dateiname der Liste der bekannten Message-IDs
-#      (musz sich im Verzeichnis oberhalb des Zielverzeichnisses befinden)
+#      (musz sich im Zielverzeichnis befinden)
 
 # Ausgabe:
 # Als Unterverzeichnis des Absender-Kontaktes 
 #   (des Zielverzeichnisses) abgelegte E-Mail
 
 
-ABLAGEVERZ=$2
+ABLAGEVERZ="$2"
 LISTEMESSAGEIDS=$3
-SKRIPTVERZ=$PWD/`dirname $0`
+SKRIPTVERZ=`dirname $0`
 
 #echo Bearbeite "$1"
 MESSAGEID=$( cat "$1" \
-| sed '/^$/q; /^Message-/{ s/^Message-Id:.<//i; s/>$//; q}; d' \
+| sed -r '/^$/q; /^Message-/{ s/^Message-Id: *(.<)?//i; s/>.*$//; q}; d' \
 | sh $SKRIPTVERZ/HeaderfeldInDateinamenWandeln.sh
 )
 #MESSAGEID=`cat "$1" \
@@ -32,8 +32,8 @@ then
   )
 fi
 
-if [ -f $ABLAGEVERZ/../$LISTEMESSAGEIDS ]; then
-  cat $ABLAGEVERZ/../$LISTEMESSAGEIDS | grep "$MESSAGEID" > /dev/null \
+if [ -f $ABLAGEVERZ/$LISTEMESSAGEIDS ]; then
+  cat $ABLAGEVERZ/$LISTEMESSAGEIDS | grep "$MESSAGEID" > /dev/null \
   && {
     #echo Message-ID bekannt
     exit
@@ -68,7 +68,7 @@ sh $SKRIPTVERZ/DekodiererbugsEntfernen.sh "$ABLAGEVERZ/$MAILVERZ"
 
 cp "$1" "$ABLAGEVERZ/$MAILVERZ/src"
 
-cat "$1" \
+sh $SKRIPTVERZ/catNachStdUtf8.sh "$1" \
 | sed -e '/^$/ q' \
 > "$ABLAGEVERZ/$MAILVERZ/hdr"
 
@@ -84,8 +84,8 @@ grep -qi "^Content-Type:" "$1" \
   #echo Content-Type aus dem Entpacker-Log: $(sed '/^part1/{s/^.*(//;s/)$//;n}; d' $ABLAGEVERZ/$MAILVERZ/log)
   if [ ! -f "$ABLAGEVERZ/$MAILVERZ/part1" ]; then
     #echo $MAILVERZ: part1 fehlt
-    diff -n "$ABLAGEVERZ/$MAILVERZ/hdr" "$1" \
-    | sed '1d' \
+    sh $SKRIPTVERZ/catNachStdUtf8.sh "$ABLAGEVERZ/$MAILVERZ/src" \
+    | sed '1,/^$/d' \
     > "$ABLAGEVERZ/$MAILVERZ/part1"
   fi
   # part1 existiert jetzt, koennte aber Groesze 0 haben
@@ -118,7 +118,8 @@ if [ -f "$ABLAGEVERZ/$MAILVERZ/part2" ]; then
 #  mv "$ABLAGEVERZ/$MAILVERZ/part2" "$ABLAGEVERZ/$MAILVERZ/$SUBJECT.html"
 #  #touch -d "$DATE" "$ABLAGEVERZ/$MAILVERZ/$SUBJECT.html"
 #  rm -f "$ABLAGEVERZ/$MAILVERZ/part1"
-  mv "$ABLAGEVERZ/$MAILVERZ/part2" "$ABLAGEVERZ/$MAILVERZ/$SUBJECT.html"
+#  mv "$ABLAGEVERZ/$MAILVERZ/part2" "$ABLAGEVERZ/$MAILVERZ/$SUBJECT.html"
+  rm "$ABLAGEVERZ/$MAILVERZ/part2"
 fi
 
 DATE_EPOCH=$(date --date="$DATE" +%s)
@@ -133,4 +134,4 @@ do
   || touch -d @$DATE_PLUS_EINS "$ABLAGEVERZ/$MAILVERZ/$FILE"
 done < /tmp/lst2
 
-echo $MESSAGEID >> $ABLAGEVERZ/../$LISTEMESSAGEIDS
+echo "$MESSAGEID" >> $ABLAGEVERZ/../$LISTEMESSAGEIDS

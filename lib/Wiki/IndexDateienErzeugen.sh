@@ -28,7 +28,7 @@ ls "$BASISVERZ" \
     if [ -d "$BASISVERZ/$ARGS" ]; then
       echo "* [$ARGS]($ARGS)" >> $BASISVERZ/index.mdwn
       echo "# Unterhaltung mit $ARGS" > $BASISVERZ/$ARGS/index.mdwn
-      echo "[[!inline pages=\""$ARGS"/* and !*/hdr and !*/log and !*/src\" sort=\"-age\"]]" \
+      echo "[[!inline pages=\""$ARGS"/* and !*/hdr and !*/log and !*/src\" sort=\"-age\" show=\"0\"]]" \
         >> $BASISVERZ/$ARGS/index.mdwn
     fi
   done

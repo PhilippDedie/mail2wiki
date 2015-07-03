@@ -27,7 +27,7 @@ In development
 
 ## System Requirements
 * sh shell
-* Unix command line tools: sed, grep, awk, file, convert, expr, perl
+* Unix command line tools: sed, grep, awk, file, iconv, strings, tr, expr, cut, wc, dirname, basename, find, perl
 * Unix mail handling tools: reformail, munpack
 * Wiki compiler: ikiwiki
 

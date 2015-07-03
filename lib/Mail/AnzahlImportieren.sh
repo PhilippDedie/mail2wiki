@@ -20,16 +20,8 @@ LISTEMESSAGEIDS=$5
 DATEINAMENFILTER=$6
 SKRIPTVERZ=`dirname $0`
 
-if [ "$DATEINAMENFILTER" = "" ]
-then
-  find "$POSTVERZ" -type f > /tmp/lst
-else
-  find "$POSTVERZ" -iname "$DATEINAMENFILTER" -type f > /tmp/lst
-fi
-
-N=1;
-while read ARGS; do
-  #echo $N $ARGS;
+Schleife() {
+  echo $N $ARGS;
   ABSADR=`sh $SKRIPTVERZ/AbsenderAdresse.sh "$ARGS"`
   ABSNAME=`sh $SKRIPTVERZ/AbsenderName.sh "$ARGS"`
   UMGEKEHRT=0
@@ -44,7 +36,9 @@ while read ARGS; do
   if [ `echo $POSTABSENDERADRESSEN | grep -c $ABSADR` -ne 0 \
        -o `echo $POSTABSENDERDRESSEN | grep -c "$ABSNAME"` -ne 0 ]
   then
-    ABSADR=`sh $SKRIPTVERZ/ErsteEmpfaengerAdresse.sh "$ARGS"`
+    ABSADR2=`sh $SKRIPTVERZ/ErsteEmpfaengerAdresse.sh "$ARGS"`
+    # might be empty if defective mail header
+    if [ "ABSADR2" != "" ]; then ABSADR="$ABSADR2"; fi
     UMGEKEHRT=1
     #echo Erste Empfängeradresse ist: $ABSADR
   fi
@@ -56,12 +50,29 @@ while read ARGS; do
       "$ARGS" "$ZIELVERZ" $LISTEADRESSEZUVERZ $UMGEKEHRT`
     #echo Neuer Kontakt \"$KONTAKTVERZ\" erstellt aus $ARGS
   fi
-  #echo Kontaktverz. nach neu erstellen: $KONTAKTVERZ
+  echo Kontaktverz. nach neu erstellen: $KONTAKTVERZ
   sh $SKRIPTVERZ/EineEntpacken.sh \
     "$ARGS" "$ZIELVERZ/$KONTAKTVERZ" $LISTEMESSAGEIDS;
+  echo -n "ID: " ; tail -n 1 $ZIELVERZ/$LISTEMESSAGEIDS
   N=$(expr $N + 1);
-  if [ $N -gt $POSTZAHL ]; then break; fi;
-  echo -n .
+  if [ $N -gt $POSTZAHL ]
+  then
+    break
+  fi
+  echo -n . 
+}
+
+if [ "$DATEINAMENFILTER" = "" ]
+then
+  find "$POSTVERZ" -type f > /tmp/lst
+else
+  find "$POSTVERZ" -iname "$DATEINAMENFILTER" -type f > /tmp/lst
+fi
+
+N=1
+while read -r ARGS; do
+  Schleife
 done < /tmp/lst
 
 echo
+echo $(expr $N - 1) messages imported out of $(wc -l /tmp/lst | sed 's/ .*//') input files found

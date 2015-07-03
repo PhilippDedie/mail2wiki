@@ -17,5 +17,7 @@ then
 fi
 
 cat $LISTEADRESSEZUVERZ \
-| grep $MAILADR \
+| grep -i $MAILADR \
 | sed '1s/^.*\t//; 2,$d'
+
+# grep -i: ignore letter case

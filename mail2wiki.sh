@@ -11,18 +11,21 @@
 # Konfiguration:
 ##################
 
-# Message directory in which all files will be read as input e-mails:
+# Message directory in which all files will be read as input e-mails.
+# Subdirectories will also be searched.
 #POSTVERZ=/home/kunibert/net_sik/Maildir-sik/\[Gmail\].Alle\ Nachrichten/cur
-POSTVERZ=/home/kunibert/Dateien/andreaarch/Dokumente/Texte/Mails
+#POSTVERZ=/home/kunibert/Dateien/andreaarch/Dokumente/Texte/Mails
+#POSTVERZ=/home/kunibert/Dateien/andreaarch/JSO/Mails
+POSTVERZ=/home/kunibert/AndreaMail
 
 # Optionaler Filter fuer Dateinamen im POSTVERZ. Kann leergelassen werden.
 # Falls nicht leergelassen, werden auch alle Unterverzeichnisse von POSTVERZ
 # durchsucht.
-#DATEINAMENFILTER=
-DATEINAMENFILTER="*.eml"
+DATEINAMENFILTER=
+#DATEINAMENFILTER="*.eml"
 
 # Message count -- so many e-mails will be read:
-POSTZAHL=30
+POSTZAHL=30000
 
 # Library subdirectory containing the subroutines:
 BIB=lib
@@ -73,7 +76,7 @@ then
 fi
 
 echo Nachrichten importieren
-sh $BIB/Mail/AnzahlImportieren.sh \
+perl $BIB/Mail/ImportMails.pl \
   "$POSTVERZ" $POSTZAHL $ZIELVERZ $LISTEADRESSEZUVERZ \
   $LISTEMESSAGEIDS "$DATEINAMENFILTER"
 # Hierbei koennen weitere Kontakte erzeugt worden sein.
@@ -81,7 +84,7 @@ sh $BIB/Mail/AnzahlImportieren.sh \
 sh $BIB/Wiki/IndexDateienErzeugen.sh $ZIELVERZ "$POSTABSENDER"
 
 if [ $LOESCHEN -eq 1 ]; then
-  ikiwiki --setup iki.setup
+  ikiwiki --setup iki.setup 2>&1 | grep -v "does not map to Unicode"
 else
-  ikiwiki --setup iki.setup --refresh
+  ikiwiki --setup iki.setup --refresh 2>&1 | grep -v "does not map to Unicode"
 fi

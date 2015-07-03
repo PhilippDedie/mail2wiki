@@ -6,8 +6,6 @@
 # Ausgabe:
 # stdout - E-Mail-Text mit ausgeblendeten Zitaten
 
-##### zunaechst nur mit Markierung des Ausblendungsstelle! #######
-
 #DATEI=$1
 #SKRIPTVERZ=`dirname $0`
 
@@ -30,5 +28,5 @@ cat \
 | sed -r "$KRITERIUM2" \
 | sed -r "$KRITERIUM3" \
 | sed -r "$KRITERIUM4" \
-| sed -r "$KRITERIUM5" 
-#| sed -r "$KRITERIUM6"
+| sed -r "$KRITERIUM5" \
+| sed '/^XXXXXXXXXXXXX/{s/.*//; q};'

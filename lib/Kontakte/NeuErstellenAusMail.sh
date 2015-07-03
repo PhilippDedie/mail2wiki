@@ -18,12 +18,34 @@ MAILDATEI="$1"
 ZIELVERZ=$2
 LISTEADRESSEZUVERZ=$3
 UMGEKEHRT=$4
-SKRIPTVERZ=$PWD/`dirname $0`
-if [ $UMGEKEHRT -eq 1 ]
+SKRIPTVERZ=`dirname $0`
+
+if [ "$(cat "$MAILDATEI" | reformail -x "To:")" != "" ]
+then
+  TO_EXISTS=1
+else
+  TO_EXISTS=0
+fi
+if [ "$(cat "$MAILDATEI" | reformail -x "From:")" != "" ]
+then
+  FROM_EXISTS=1
+else
+  FROM_EXISTS=0
+fi
+
+if [ $UMGEKEHRT -eq 1 -a $TO_EXISTS -eq 1 ]
 then
   QUELLFELD=To:
-else
+elif [ $UMGEKEHRT -eq 0 -a $FROM_EXISTS -eq 1 ]
+then
   QUELLFELD=From:
+elif [ $UMGEKEHRT -eq 1 ]
+then
+  #TO_EXISTS is 0 (maybe FROM_EXISTS also, but we do not care)
+  QUELLFELD=From:
+else
+  #FROM_EXISTS is 0 (maybe TO_EXISTS also, but we do not care)
+  QUELLFELD=To:
 fi
 
 FROM=`cat "$MAILDATEI" \
@@ -31,9 +53,21 @@ FROM=`cat "$MAILDATEI" \
 | sh $SKRIPTVERZ/../Mail/HeaderfeldDekodieren.sh`
 
 ADRESSE=`echo "$FROM" | sh $SKRIPTVERZ/../Mail/AdresseAusHeaderfeldLesen.sh`
+if [ "$ADRESSE" = "" ]
+then
+  # Big problem, but unlikely.
+  ADRESSE=unknown
+fi
 
 NAME=`echo "$FROM" | sh $SKRIPTVERZ/../Mail/NameAusHeaderfeldLesen.sh`
+if [ "$NAME" = "" ]
+then
+  NAME=unknown
+fi
+
 SAUBERNAME=`echo $NAME | awk -e '{print SaubereKontaktnamen($0)}' -f $SKRIPTVERZ/SaubereNamen.awk`
+
+
 
 #echo Erstelle neuen Kontakt fuer "$FROM"
 #echo Adresse ist: "$ADRESSE"
