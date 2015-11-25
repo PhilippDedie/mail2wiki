@@ -3,8 +3,8 @@
 # Eingabe:
 # $1 - Dateiname der E-Mail
 # $2 - Zielverzeichnis
-# $3 - Dateiname der Liste der bekannten Message-IDs
-#      (musz sich im Zielverzeichnis befinden)
+# $3 - Name of the mail directory to be created
+#      (currently the message ID)
 
 # Ausgabe:
 # Als Unterverzeichnis des Absender-Kontaktes 
@@ -12,55 +12,25 @@
 
 
 ABLAGEVERZ="$2"
-LISTEMESSAGEIDS=$3
+MESSAGEID=$3
 SKRIPTVERZ=`dirname $0`
-
-#echo Bearbeite "$1"
-MESSAGEID=$( cat "$1" \
-| sed -r '/^$/q; /^Message-/{ s/^Message-Id: *(.<)?//i; s/>.*$//; q}; d' \
-| sh $SKRIPTVERZ/HeaderfeldInDateinamenWandeln.sh
-)
-#MESSAGEID=`cat "$1" \
-#| reformail -x Message-Id:`
-if [ "$MESSAGEID" = "" ]
-then
-  # Datum als Ersatz
-  MESSAGEID=$(cat "$1" \
-  | reformail -x Date: \
-  | sh $SKRIPTVERZ/HeaderfeldInDateinamenWandeln.sh \
-  | tr ' ' '_'
-  )
-fi
-
-if [ -f $ABLAGEVERZ/$LISTEMESSAGEIDS ]; then
-  cat $ABLAGEVERZ/$LISTEMESSAGEIDS | grep "$MESSAGEID" > /dev/null \
-  && {
-    #echo Message-ID bekannt
-    exit
-  }
-fi
-
-DATE=`cat "$1" \
-| reformail -x Date:`
-SUBJECT=`cat "$1" \
-| reformail -x Subject: \
-| sh $SKRIPTVERZ/HeaderfeldDekodieren.sh \
-| sh $SKRIPTVERZ/HeaderfeldInDateinamenWandeln.sh`
-#echo Betreff: "$SUBJECT"
-if [ "$SUBJECT" = "" ]
-then
-  SUBJECT=Unbenannt
-fi
-
-#LFDNR=`echo "$1" | sed 's/^.*,U=//;s/,FMD5=.*$//'`
 
 MAILVERZ=$MESSAGEID
 #MAILVERZ=$LFDNR
-#DEKODIERER=`echo uudeview -p "$ABLAGEVERZ/$MAILVERZ" -t -`
-DEKODIERER=`echo munpack -f -t -C $ABLAGEVERZ/$MAILVERZ`
-
 #echo "Erstelle Mailverz. $MAILVERZ"
 mkdir -p "$ABLAGEVERZ/$MAILVERZ"
+
+DATE=`cat "$1" \
+| reformail -x Date:`
+cat "$1" \
+| reformail -x Subject: \
+| sh $SKRIPTVERZ/HeaderfeldDekodieren.sh \
+> $ABLAGEVERZ/$MAILVERZ/subject
+
+#LFDNR=`echo "$1" | sed 's/^.*,U=//;s/,FMD5=.*$//'`
+
+#DEKODIERER=`echo uudeview -p "$ABLAGEVERZ/$MAILVERZ" -t -`
+DEKODIERER=`echo munpack -f -t -C $ABLAGEVERZ/$MAILVERZ`
 
 sh $SKRIPTVERZ/catNachStdUtf8.sh "$1" \
 | $DEKODIERER > "$ABLAGEVERZ/$MAILVERZ/log" 2>&1
@@ -80,58 +50,67 @@ grep -qi "^Content-Type:" "$1" \
 || CONTENTTYPE=unbekannt
 
 
-  #echo Content-Type aus dem Nachrichtenkopf: $CONTENTTYPE
-  #echo Content-Type aus dem Entpacker-Log: $(sed '/^part1/{s/^.*(//;s/)$//;n}; d' $ABLAGEVERZ/$MAILVERZ/log)
-  if [ ! -f "$ABLAGEVERZ/$MAILVERZ/part1" ]; then
-    #echo $MAILVERZ: part1 fehlt
-    sh $SKRIPTVERZ/catNachStdUtf8.sh "$ABLAGEVERZ/$MAILVERZ/src" \
-    | sed '1,/^$/d' \
-    > "$ABLAGEVERZ/$MAILVERZ/part1"
-  fi
-  # part1 existiert jetzt, koennte aber Groesze 0 haben
-  if [ ! -s "$ABLAGEVERZ/$MAILVERZ/part1" ]
-  then
-    sed 's/\r$//; 1,/^$/d' "$1" > "$ABLAGEVERZ/$MAILVERZ/part1"
-  fi
-  #echo $LFDNR: $CONTENTTYPE
-  if [ "$CONTENTTYPE" = "text/html" ]; then
-    ENDUNG=html
-  elif [ "$CONTENTTYPE" = "text/plain" ]; then
-    ENDUNG=txt
-  elif [ "`sed '/^part1/{s/^.*(//;s/)$//;n}; d' $ABLAGEVERZ/$MAILVERZ/log`" = "text/html" ]; then
-    ENDUNG=html
-  else
-    ENDUNG=txt
-  fi
-  if [ "$ENDUNG" = "txt" ]; then
-    sh $SKRIPTVERZ/catNachStdUtf8.sh "$ABLAGEVERZ/$MAILVERZ/part1" \
-    | sh $SKRIPTVERZ/UntereZitateAusblenden.sh \
-    | sh $SKRIPTVERZ/Textumbruch.sh \
-    > "$ABLAGEVERZ/$MAILVERZ/$SUBJECT".txt
-    rm -f "$ABLAGEVERZ/$MAILVERZ/part1"
-  else
-    mv "$ABLAGEVERZ/$MAILVERZ/part1" "$ABLAGEVERZ/$MAILVERZ/$SUBJECT.$ENDUNG"
-  fi
-
-## part2 (html) statt part1 verwenden, deaktiviert:
-if [ -f "$ABLAGEVERZ/$MAILVERZ/part2" ]; then
-#  mv "$ABLAGEVERZ/$MAILVERZ/part2" "$ABLAGEVERZ/$MAILVERZ/$SUBJECT.html"
-#  #touch -d "$DATE" "$ABLAGEVERZ/$MAILVERZ/$SUBJECT.html"
-#  rm -f "$ABLAGEVERZ/$MAILVERZ/part1"
-#  mv "$ABLAGEVERZ/$MAILVERZ/part2" "$ABLAGEVERZ/$MAILVERZ/$SUBJECT.html"
-  rm "$ABLAGEVERZ/$MAILVERZ/part2"
+#echo Content-Type from mail header: $CONTENTTYPE
+#echo Content-Type from unpacker log: $(sed '/^part1/{s/^.*(//;s/)$//;n}; d' $ABLAGEVERZ/$MAILVERZ/log)
+if [ ! -f "$ABLAGEVERZ/$MAILVERZ/part1" ]; then
+  #echo $MAILVERZ: part1 missing
+  sh $SKRIPTVERZ/catNachStdUtf8.sh "$ABLAGEVERZ/$MAILVERZ/src" \
+  | sed '1,/^$/d' \
+  > "$ABLAGEVERZ/$MAILVERZ/part1"
 fi
 
-DATE_EPOCH=$(date --date="$DATE" +%s)
-DATE_PLUS_EINS=$(expr $DATE_EPOCH + 1)
-# Das ist, um die Anhaenge im Wiki unterhalb (spaeter)
-# als den Nachrichtentext darzustellen.
-ls -1 "$ABLAGEVERZ/$MAILVERZ" > /tmp/lst2
-while read FILE
-do
-  echo "$FILE" | egrep "\.(txt|html)$" > /dev/null \
-  && touch -d "$DATE" "$ABLAGEVERZ/$MAILVERZ/$FILE" \
-  || touch -d @$DATE_PLUS_EINS "$ABLAGEVERZ/$MAILVERZ/$FILE"
-done < /tmp/lst2
+# part1 exists now but might have size 0
+if [ ! -s "$ABLAGEVERZ/$MAILVERZ/part1" ]
+then
+  sed 's/\r$//; 1,/^$/d' "$1" > "$ABLAGEVERZ/$MAILVERZ/part1"
+fi
 
-echo "$MESSAGEID" >> $ABLAGEVERZ/../$LISTEMESSAGEIDS
+# Determine the file type for the part1 of the message:
+if [ "$CONTENTTYPE" = "text/html" ]; then
+    PART1TYPE=html
+elif [ "$CONTENTTYPE" = "text/plain" ]; then
+    PART1TYPE=txt
+elif [ "`sed '/^part1/{s/^.*(//;s/)$//;n}; d' $ABLAGEVERZ/$MAILVERZ/log`" = "text/html" ]; then
+    PART1TYPE=html
+else
+    PART1TYPE=txt
+fi
+
+# Determine which source to use for the message body:
+if [ -f "$ABLAGEVERZ/$MAILVERZ/part2" ]
+then
+  BODYSOURCE=part2
+else
+  BODYSOURCE=part1
+fi
+
+# Determine whether HTML has to be converted to text:
+if [ "$BODYSOURCE" = "part2" -o "$PART1TYPE" = "html" ]
+then
+  HTMLFILTER="html2text -utf8"
+else
+  HTMLFILTER="cat"
+fi
+
+# Write message body file:
+sh $SKRIPTVERZ/catNachStdUtf8.sh "$ABLAGEVERZ/$MAILVERZ/$BODYSOURCE" \
+| $HTMLFILTER \
+> "$ABLAGEVERZ/$MAILVERZ/bodysource.txt.bak"
+cat "$ABLAGEVERZ/$MAILVERZ/bodysource.txt.bak" \
+| sh $SKRIPTVERZ/UntereZitateAusblenden.sh \
+| sh $SKRIPTVERZ/Textumbruch.sh \
+> "$ABLAGEVERZ/$MAILVERZ/message.txt"
+
+
+# Keep HTML file, if existing, for the record.
+if [ "$BODYSOURCE" = "part2" ]
+then
+  mv "$ABLAGEVERZ/$MAILVERZ/part2" "$ABLAGEVERZ/$MAILVERZ/message.html"
+  rm "$ABLAGEVERZ/$MAILVERZ/part1"
+elif [ "$PART1TYPE" = "html" ]
+then
+  mv "$ABLAGEVERZ/$MAILVERZ/part1" "$ABLAGEVERZ/$MAILVERZ/message.html"
+else
+  rm "$ABLAGEVERZ/$MAILVERZ/part1"
+fi
+  

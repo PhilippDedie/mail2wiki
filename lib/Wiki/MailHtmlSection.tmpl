@@ -1,0 +1,26 @@
+<h2><TMPL_VAR NAME=SUBJECT></h2>
+<p>
+  <i><TMPL_VAR NAME=TIME></i>
+  <a href="<TMPL_VAR SOURCEFILES>">
+    <TMPL_IF DE>Quelldateien</TMPL_IF>
+    <TMPL_IF EN>source files</TMPL_IF>
+  </a>
+</p>
+<TMPL_IF NAME=TXT>
+ <pre>
+<TMPL_ELSE>
+ <div>
+</TMPL_IF>
+<TMPL_VAR NAME=MESSAGE>
+<TMPL_IF NAME=TXT>
+ </pre>
+<TMPL_ELSE>
+ </div>
+</TMPL_IF>
+<p>
+<TMPL_LOOP ATTACHMENTS>
+     <a href="<TMPL_VAR NAME=MAILDIR>/<TMPL_VAR NAME=FILE>">
+     <TMPL_VAR NAME=FILE>
+     </a>
+</TMPL_LOOP>
+</p>

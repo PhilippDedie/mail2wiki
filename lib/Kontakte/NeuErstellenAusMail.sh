@@ -65,7 +65,7 @@ then
   NAME=unknown
 fi
 
-SAUBERNAME=`echo $NAME | awk -e '{print SaubereKontaktnamen($0)}' -f $SKRIPTVERZ/SaubereNamen.awk`
+SAUBERNAME=`echo $NAME | perl $SKRIPTVERZ/../Wiki/CleanFilenames.pl`
 
 
 

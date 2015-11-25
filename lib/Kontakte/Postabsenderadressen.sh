@@ -18,7 +18,7 @@ then
   exit 1
 fi
 POSTABSVERZNAME=$(sed -n '/^FN:/{s/^FN://;p;q}' $BASISVERZ/*.vcf \
-  | awk -f "$SKRIPTVERZ/SaubereNamen.awk" --source '{print SaubereKontaktnamen($0);}')
+  | perl $SKRIPTVERZ/../Wiki/CleanFilenames.pl)
 
 #echo $POSTABSVERZNAME
-sed -n "/${POSTABSVERZNAME}\$/{s/\t${POSTABSVERZNAME}\$//;p;q}" "$BASISVERZ/$LISTEADRESSEZUVERZ"
+sed -n "/${POSTABSVERZNAME}\$/{s/\t${POSTABSVERZNAME}\$//;p}" "$BASISVERZ/$LISTEADRESSEZUVERZ"

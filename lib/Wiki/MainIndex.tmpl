@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head>
+	<title><TMPL_VAR NAME=MAINTITLE></title>
+	<meta charset="utf-8">
+</head>
+
+<body>
+<h1>
+  <TMPL_IF DE>Kontakte von</TMPL_IF>
+  <TMPL_IF EN>Contacts of</TMPL_IF>
+  <TMPL_VAR NAME=OWNERNAME>
+</h1>
+<p><a href="<TMPL_VAR NAME=OWNERFILENAME>.vcf">
+  <TMPL_VAR NAME=OWNERFILENAME>.vcf
+</a></p>
+
+<p>
+<TMPL_LOOP CONTACTLIST>
+  <TMPL_IF NEWLETTER>
+    </p>
+    <h2><TMPL_VAR NAME=FIRSTLETTER></h2>
+    <p>
+  </TMPL_IF>
+  <a href="<TMPL_VAR NAME=CONTACTDIR>">
+  <TMPL_VAR NAME=CONTACTDIR>
+  </a>
+  <br/>
+</TMPL_LOOP>
+</p>
+
+</body>
+</html>

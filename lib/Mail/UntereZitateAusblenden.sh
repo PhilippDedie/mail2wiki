@@ -16,11 +16,12 @@ KRITERIUM2=':a /^\n*$/{N;b a}; /^\n\n*(On |At |Am |[0-9][0-9][0-9]*).*(@|schrieb
 # uebereifriger Zeilenumbruch aktiv war (z.B.
 #  "Am 01.06.10 schrieb Clara.Pelloquin@stud.unibas.ch"
 #  "<Clara.Pelloquin@stud.unibas.ch>:")
-KRITERIUM3=':a /^\n*$/{N;b a}; /^\n*[ \t]*(____*|----*)( .* ----*[ \t]*)?$/s/^/XXXXXXXXXXXXXXXXXXX/'
+KRITERIUM3=':a /^\n*$/{N;b a}; /^\n*[ \t]*(____*|----*|====*)(.*----*[ \t]*)?$/s/^/XXXXXXXXXXXXXXXXXXX/'
 KRITERIUM4=':a /^\n*$/{N;b a}; /^\n\n*>? ?Date:/s/^/XXXXXXXXXXXXXXXXXX/'
-KRITERIUM5=':a /^\n*$/{N;b a}; /^\n*.*(sagte|said|schrieb|wrote):$/{N; b a}; /^\n*.*(sagte|said|schrieb|wrote):\n>/s/^/XXXXXXXXXXXXXXXXXXXX/'
+KRITERIUM5=':a /^\n*$/{N;b a}; /^\n*.*(sagte|said|schrieb|wrote):$/{N; b a}; /^\n*.*(sagte|said|schrieb|wrote):\n(>| |\t)/s/^/XXXXXXXXXXXXXXXXXXXX/'
 #KRITERIUM6=':a /^\n*$/{N;b a}; /^\n\n*.*(sagte|said):$/{N; b a}; /^\n\n*.*(sagte|said):\n>/s/^/XXXXXXXXXXXXXXXXXXXX/'
 #KRITERIUM6='s/  ---* .* ---*
+KRIT6='s/^.*schlkgrieb:$/huhuhuhuhuhuhu/'
 
 #sh $SKRIPTVERZ/catNachStdUtf8.sh "$DATEI" \
 cat \
@@ -29,4 +30,5 @@ cat \
 | sed -r "$KRITERIUM3" \
 | sed -r "$KRITERIUM4" \
 | sed -r "$KRITERIUM5" \
+| sed -r "$KRIT6" \
 | sed '/^XXXXXXXXXXXXX/{s/.*//; q};'

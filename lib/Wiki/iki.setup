@@ -16,15 +16,15 @@ use IkiWiki::Setup::Standard {
 	# users who are banned from the wiki
 	banned_users => [],
 	# where the source of the wiki is located
-	srcdir => '/home/kunibert/Dokumente/I/laufende/mail2wiki/ablage',
+	srcdir => '/home/kunibert/mail2wiki/ablage',
 	# where to build the wiki
-	destdir => '/home/kunibert/Dokumente/I/laufende/mail2wiki/wiki',
+	destdir => '/home/kunibert/mail2wiki/wiki',
 	# base url to the wiki
 	url => 'http://localhost/mail2wiki',
 	# url to the ikiwiki.cgi
 	cgiurl => 'http://localhost/mail2wiki/ikiwiki.cgi',
 	# filename of cgi wrapper to generate
-	cgi_wrapper => '/home/kunibert/Dokumente/I/laufende/mail2wiki/wiki/ikiwiki.cgi',
+	cgi_wrapper => '/home/kunibert/mail2wiki/wiki/ikiwiki.cgi',
 	# mode for cgi_wrapper (can safely be made suid)
 	cgi_wrappermode => '06755',
 	# number of seconds to delay CGI requests when overloaded
@@ -88,7 +88,7 @@ use IkiWiki::Setup::Standard {
 	# regexp of files that should be skipped
 	exclude => '^(.*src|.*hdr)$',
 	# specifies the characters that are allowed in source filenames
-	wiki_file_chars => '-[:alnum:]+/.~:_,@| !()#',
+	wiki_file_chars => '-[:alnum:]+/.~:_,@|!()#?',
 	# allow symlinks in the path leading to the srcdir (potentially insecure)
 	allow_symlinks_before_srcdir => 0,
 	# cookie control

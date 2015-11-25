@@ -13,4 +13,4 @@ QUELLVCF=$1
 
 cd $ZIELVERZ
 cat $QUELLVCF \
-| awk -f $STARTVERZ/QuellVcfZerteilen.awk -f $STARTVERZ/SaubereNamen.awk
+| awk -f $STARTVERZ/QuellVcfZerteilen.awk -f $STARTVERZ/alt/SaubereNamen.awk

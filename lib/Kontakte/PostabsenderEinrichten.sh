@@ -14,7 +14,7 @@
 ZIELVERZ=$1
 POSTABSENDER=$2
 SKRIPTVERZ=`dirname $0`
-POSTABSENDERVERZNAME=`echo "$POSTABSENDER" | awk -f $SKRIPTVERZ/SaubereNamen.awk --source '{print SaubereKontaktnamen($0);}'`
+POSTABSENDERVERZNAME=`echo "$POSTABSENDER" | perl $SKRIPTVERZ/../Wiki/CleanFilenames.pl`
 
 if [ ! -d "$ZIELVERZ/$POSTABSENDERVERZNAME" ]
 then

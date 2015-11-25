@@ -16,7 +16,8 @@
 #POSTVERZ=/home/kunibert/net_sik/Maildir-sik/\[Gmail\].Alle\ Nachrichten/cur
 #POSTVERZ=/home/kunibert/Dateien/andreaarch/Dokumente/Texte/Mails
 #POSTVERZ=/home/kunibert/Dateien/andreaarch/JSO/Mails
-POSTVERZ=/home/kunibert/AndreaMail
+#POSTVERZ=/home/kunibert/mail2wiki/AndreaMail
+POSTVERZ=/home/kunibert/mail2wiki/PhilippMail
 
 # Optionaler Filter fuer Dateinamen im POSTVERZ. Kann leergelassen werden.
 # Falls nicht leergelassen, werden auch alle Unterverzeichnisse von POSTVERZ
@@ -25,18 +26,19 @@ DATEINAMENFILTER=
 #DATEINAMENFILTER="*.eml"
 
 # Message count -- so many e-mails will be read:
-POSTZAHL=30000
+#POSTZAHL=30000
+POSTZAHL=300
 
 # Library subdirectory containing the subroutines:
 BIB=lib
 
 # VCF-Datei leer lassen, falls nicht vorhanden:
-QUELLVCF=
-#QUELLVCF=/home/kunibert/net_sik/gcon/gcon.vcf
+#QUELLVCF=
+QUELLVCF=/home/kunibert/mail2wiki/philipps-kontakte.vcf
 
 # Destination directory in which the extracted files (messages
 # and attachments as well as wiki markup files) will be stored:
-ZIELVERZ=/home/kunibert/Dokumente/I/laufende/mail2wiki/ablage
+ZIELVERZ=/home/kunibert/mail2wiki/ablage
 
 # CSV filename for assigning e-mail addresses to contact folders
 # within the destination directory:
@@ -45,10 +47,17 @@ LISTEADRESSEZUVERZ=AdresseZuVerz.csv
 # CSV filename for storing known message IDs:
 LISTEMESSAGEIDS=MessageIds.csv
 
-#POSTABSENDER="Philipp Dedié"
-POSTABSENDER="Andrea Dick"
+POSTABSENDER="Philipp Dedié"
+#POSTABSENDER="Andrea Dick"
 # Name des Kontaktes, der der Postabsender ist.
 # Das ist der Eigentuemer des zu erstellenden Postkastens.
+
+TXTORHTML="txt"
+# Whether to prefer text or HTML message bodies in the
+# output. Defaults to HTML. Possible values "txt" or "html".
+
+LANGUAGE="DE"
+# HTML index file language. Possible values are currently DE or EN.
 
 ######################
 # Ende Konfiguration
@@ -65,26 +74,23 @@ fi
 
 if [ $LOESCHEN -eq 1 ]
 then 
+  echo Preparing target directory
+  echo "Deleting $ZIELVERZ; Press Ctrl-C to abort"
   rm -r $ZIELVERZ; mkdir $ZIELVERZ
   if [ "$QUELLVCF" != "" ]
   then
-    echo Kontakte erzeugen
+    echo Creating Contacts
     sh $BIB/Kontakte/VerzeichnisseErzeugen.sh $QUELLVCF $ZIELVERZ
     sh $BIB/Kontakte/ErzeugeListeAdresseZuVerz.sh $ZIELVERZ $LISTEADRESSEZUVERZ
   fi
   sh $BIB/Kontakte/PostabsenderEinrichten.sh $ZIELVERZ "$POSTABSENDER"
 fi
 
-echo Nachrichten importieren
+echo Importing messages
 perl $BIB/Mail/ImportMails.pl \
   "$POSTVERZ" $POSTZAHL $ZIELVERZ $LISTEADRESSEZUVERZ \
-  $LISTEMESSAGEIDS "$DATEINAMENFILTER"
+  $LISTEMESSAGEIDS "$DATEINAMENFILTER" $TXTORHTML $LANGUAGE
 # Hierbei koennen weitere Kontakte erzeugt worden sein.
 
-sh $BIB/Wiki/IndexDateienErzeugen.sh $ZIELVERZ "$POSTABSENDER"
-
-if [ $LOESCHEN -eq 1 ]; then
-  ikiwiki --setup iki.setup 2>&1 | grep -v "does not map to Unicode"
-else
-  ikiwiki --setup iki.setup --refresh 2>&1 | grep -v "does not map to Unicode"
-fi
+echo Finishing HTML index
+perl $BIB/Wiki/CreateIndexFiles.pl "$ZIELVERZ" "$POSTABSENDER" $TXTORHTML $LANGUAGE

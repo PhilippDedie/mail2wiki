@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+<head>
+	<title><TMPL_VAR NAME=TITLE></title>
+	<meta charset="utf-8">
+</head>
+
+<body>
+<h1>
+  <TMPL_IF DE>Konversation mit</TMPL_IF>
+  <TMPL_IF EN>Conversation with</TMPL_IF>
+  <TMPL_VAR NAME=CONTACTNAME>
+</h1>
+
+<TMPL_LOOP MESSAGES>
+	   <TMPL_VAR NAME=MESSAGEHTML>
+</TMPL_LOOP>
+</body>
+</html>
